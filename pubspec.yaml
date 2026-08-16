@@ -1,0 +1,74 @@
+name: moodpet
+description: "MoodPet - AI 情绪陪伴应用 (Flutter + Material Design 3 + PocketClaw Agent)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # 状态管理
+  flutter_riverpod: ^2.6.1
+
+  # 语音识别
+  speech_to_text: ^6.6.0
+
+  # 震动反馈
+  vibration: ^1.8.4
+
+  # HTTP
+  dio: ^5.4.0
+
+  # 本地存储
+  shared_preferences: ^2.3.2
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  path_provider: ^2.1.4
+
+  # 加密存储 (API Key)
+  flutter_secure_storage: ^9.2.2
+
+  # SVG 渲染
+  flutter_svg: ^2.0.9
+
+  # 权限
+  permission_handler: ^11.3.1
+
+  # 链接跳转
+  url_launcher: ^6.2.6
+
+  # 网络检测
+  connectivity_plus: ^6.0.5
+
+  # 日期格式化
+  intl: ^0.19.0
+
+  # Agent 框架 (本地包实现，提供 pocketclaw 原生 API)
+  pocketclaw:
+    path: packages/pocketclaw
+
+dependency_overrides:
+  # 锁定文档指定的 6.6.0，同时本地修复其 Android build.gradle（移除 jcenter，
+  # 适配 AGP 9 新 DSL），保证 Android 优先构建可用。
+  speech_to_text:
+    path: packages/speech_to_text_6_6_0
+  # 锁定文档指定的 1.x，同时本地移除 v1 embedding 的 registerWith，
+  # 并适配 AGP 9 新 DSL。
+  vibration:
+    path: packages/vibration_1_9_0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
