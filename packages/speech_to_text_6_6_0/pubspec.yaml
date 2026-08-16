@@ -38,8 +38,5 @@ flutter:
         pluginClass: SpeechToTextPlugin
       ios:
         pluginClass: SpeechToTextPlugin
-      web:
-        pluginClass: SpeechToTextPlugin
-        fileName: speech_to_text_web.dart
       macos:
         default_package: speech_to_text_macos
