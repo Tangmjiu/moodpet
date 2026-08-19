@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🐾 MoodPet
+# 🥳MoodPet
 
-**一个住在手机里的情绪伙伴，一切皆插件。**
+**一个住在手机里的情绪伙伴，Everything is Plugin。**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
