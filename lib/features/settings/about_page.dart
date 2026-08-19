@@ -575,7 +575,7 @@ class _BrandHero extends StatelessWidget {
             boxShadow: clayShadows(context, intensity: 1.2),
           ),
           child: const Center(
-            child: Text('🐾', style: TextStyle(fontSize: 56)),
+            child: Text('🥳', style: TextStyle(fontSize: 56)),
           ),
         ),
         const SizedBox(height: kSpace20),
