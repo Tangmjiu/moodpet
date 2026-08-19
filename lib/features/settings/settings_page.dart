@@ -171,41 +171,14 @@ class _SettingsBody extends ConsumerWidget {
             children: [
               _SettingsTile(
                 icon: Icons.info_outline,
-                iconBg: theme.colorScheme.surfaceContainerHighest,
-                iconFg: theme.colorScheme.onSurface,
-                title: 'MoodPet',
+                iconBg: theme.colorScheme.primaryContainer,
+                iconFg: theme.colorScheme.onPrimaryContainer,
+                title: '关于 MoodPet',
                 subtitle: const Text(
-                  '一切皆插件的开源共生情感体平台',
+                  '版本、贡献者、开源信息',
                   style: TextStyle(fontWeight: FontWeight.w400),
                 ),
-                showDivider: true,
-              ),
-              _SettingsTile(
-                icon: Icons.code_rounded,
-                iconBg: theme.colorScheme.surfaceContainerHighest,
-                iconFg: theme.colorScheme.onSurface,
-                title: '版本',
-                trailing: Text(
-                  '1.0.0',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                showDivider: true,
-              ),
-              _SettingsTile(
-                icon: Icons.volunteer_activism_outlined,
-                iconBg: theme.colorScheme.surfaceContainerHighest,
-                iconFg: theme.colorScheme.onSurface,
-                title: 'Agent 引擎',
-                trailing: Text(
-                  'PocketClaw',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                onTap: () => Navigator.pushNamed(context, '/about'),
               ),
             ],
           ),
@@ -221,15 +194,14 @@ class _SettingsBody extends ConsumerWidget {
       registry.byId(id)?.name ?? id;
 }
 
-/// A single settings list tile with an icon badge, title, subtitle/trailing,
-/// and optional divider.
+/// A single settings list tile with an icon badge, title, subtitle, and
+/// optional divider.
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final Color iconBg;
   final Color iconFg;
   final String title;
   final Widget? subtitle;
-  final Widget? trailing;
   final VoidCallback? onTap;
   final bool showDivider;
 
@@ -239,7 +211,6 @@ class _SettingsTile extends StatelessWidget {
     required this.iconFg,
     required this.title,
     this.subtitle,
-    this.trailing,
     this.onTap,
     this.showDivider = false,
   });
@@ -286,8 +257,7 @@ class _SettingsTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ?trailing,
-                  if (onTap != null && trailing == null) ...[
+                  if (onTap != null) ...[
                     const SizedBox(width: kSpace8),
                     Icon(
                       Icons.chevron_right_rounded,

@@ -39,6 +39,7 @@ dependencies:
 
   # Markdown rendering — LLM replies in the speech bubble / detail sheet.
   flutter_markdown: ^0.7.6
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

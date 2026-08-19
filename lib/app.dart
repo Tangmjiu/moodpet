@@ -14,6 +14,7 @@ import 'features/market/market_page.dart';
 import 'features/market/pack_detail_page.dart';
 import 'features/market/plugin_detail_page.dart';
 import 'features/plugins/plugin_management_page.dart';
+import 'features/settings/about_page.dart';
 import 'features/settings/settings_page.dart';
 import 'features/splash_page.dart';
 
@@ -516,6 +517,7 @@ class MoodPetApp extends StatelessWidget {
       routes: {
         '/plugins': (context) => const PluginManagementPage(),
         '/settings': (context) => const SettingsPage(),
+        '/about': (context) => const AboutPage(),
         '/market': (context) => const MarketPage(),
         '/market/plugin': (context) => const PluginDetailPage(),
         '/market/pack': (context) => const PackDetailPage(),
