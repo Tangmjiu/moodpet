@@ -169,7 +169,7 @@ lib/
 | **插件开发者** | 怎么写 Friend / Application / 整合包，怎么打包上架 |
 | **容器开发者** | 市场数据层 API、安装器、Provider、UI 完整参考 |
 
-文档站用 Starlight Material Design 3 主题构建。
+https://moodpetdocs.mjiutang.top
 
 ## 🛠️ 开发
 
