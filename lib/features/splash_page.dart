@@ -54,10 +54,11 @@ class _SplashPageState extends ConsumerState<SplashPage>
       if (mounted) _contentController.forward();
     });
 
-    // After the minimum display duration, wait for the init provider to
-    // resolve, then navigate. Reading the provider's .future ensures we
-    // navigate only when data is ready, and avoids calling Navigator during
-    // the build phase.
+    // After the minimum display duration, wait for the onboarding state to
+    // resolve, then navigate. The agent service initialises in the background;
+    // _respond on the home page awaits it on first send so the first message
+    // is never dropped even if the user enters the home page before the agent
+    // is fully ready.
     Future.delayed(_kMinSplashDuration, () async {
       if (!mounted) return;
       try {

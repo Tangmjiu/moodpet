@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart' show kSpace4, kSpace8, kSpace12, kSpace16, kSpace24, kSpace32, kRadiusLg, ClayContainer, IconBadge;
 import '../../core/provider_registry.dart';
 import '../../core/providers.dart';
+import 'conversation_page.dart';
+import 'log_viewer_page.dart';
 import 'provider_selection_page.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -82,6 +84,42 @@ class _SettingsBody extends ConsumerWidget {
                     MaterialPageRoute(
                       builder: (_) =>
                           const ProviderSelectionPage(fromOnboarding: false),
+                    ),
+                  );
+                },
+                showDivider: true,
+              ),
+              _SettingsTile(
+                icon: Icons.forum_outlined,
+                iconBg: theme.colorScheme.secondaryContainer,
+                iconFg: theme.colorScheme.onSecondaryContainer,
+                title: '对话历史',
+                subtitle: const Text(
+                  '伙伴记得你说过的内容',
+                  style: TextStyle(fontWeight: FontWeight.w400),
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ConversationPage(),
+                    ),
+                  );
+                },
+                showDivider: true,
+              ),
+              _SettingsTile(
+                icon: Icons.article_outlined,
+                iconBg: theme.colorScheme.surfaceContainerHighest,
+                iconFg: theme.colorScheme.onSurface,
+                title: '日志查看器',
+                subtitle: const Text(
+                  '查看 Agent / LLM 调用日志，导出诊断信息',
+                  style: TextStyle(fontWeight: FontWeight.w400),
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LogViewerPage(),
                     ),
                   );
                 },

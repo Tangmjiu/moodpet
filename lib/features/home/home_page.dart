@@ -11,11 +11,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart' show SpringSimulation;
 import 'package:flutter/services.dart' show HapticFeedback;
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart' show kAppName, kSpace4, kSpace8, kSpace12, kSpace16, kSpace20, kSpace24, kSpace32, kRadiusLg, kRadiusXl, kTouchTarget, kMotionFast, kMotionMedium, kMotionSlow, kCurveSpring, kCurveEnter, kCurveSoft, kSpringBouncy, reducedMotionEnabled, clayShadows, ClayContainer;
-import '../../core/models/plugin_manifest.dart' show FriendIdentity;
-import '../../core/plugin/plugin_manager.dart' show PluginManager;
 import '../../core/providers.dart';
 import '../../core/utils/color_hex.dart';
 import '../../core/utils/haptics.dart';
@@ -44,10 +43,7 @@ class _HomePageState extends ConsumerState<HomePage>
   late final AnimationController _breathController;
   late final Animation<double> _breathAnimation;
   bool _hasShownMicHint = false;
-  bool _greetingShown = false;
   bool _greetingDismissed = false;
-  FriendIdentity? _identity;
-  bool _identityLoaded = false;
   bool _reducedMotion = false;
 
   @override
@@ -101,18 +97,20 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   Future<void> _respond(String input) async {
-    final agentAsync = ref.read(agentServiceProvider);
-    final agent = agentAsync.maybeWhen(
-      data: (a) => a,
-      orElse: () => null,
-    );
-    if (agent == null) return;
-
+    // agentServiceProvider is a FutureProvider — on a fresh app launch it may
+    // still be initialising (loading settings, plugin manager, registry) when
+    // the user sends their first message. Wait for it to resolve instead of
+    // silently dropping the message (which was the bug: first send was a no-op
+    // because `agent` was null, only the second send worked).
     if (!_greetingDismissed) {
       setState(() => _greetingDismissed = true);
     }
+    // Show the processing indicator immediately so the user sees the partner
+    // "thinking" while the agent finishes initialising.
     ref.read(isAgentProcessingProvider.notifier).state = true;
     try {
+      final agent = await ref.read(agentServiceProvider.future);
+      if (!mounted) return;
       final result = await agent.respond(input);
       if (result.isOk && result.response != null && mounted) {
         ref.read(activeEmotionProvider.notifier).state = result.response!;
@@ -131,6 +129,75 @@ class _HomePageState extends ConsumerState<HomePage>
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  /// Open a scrollable bottom sheet showing the partner's full message, for
+  /// when the on-screen bubble truncates a long LLM reply (maxLines: 4).
+  void _showFullMessage(BuildContext context, String fullText) {
+    final theme = Theme.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+              kSpace24, 0, kSpace24, kSpace32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('伙伴说', style: theme.textTheme.titleLarge),
+              const SizedBox(height: kSpace16),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: MarkdownBody(
+                    data: fullText,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                      p: theme.textTheme.bodyLarge?.copyWith(
+                        height: 1.6,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      h2: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      h3: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      strong: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      em: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      code: theme.textTheme.bodySmall?.copyWith(
+                        fontFamily: 'monospace',
+                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      ),
+                      blockquote: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: kSpace16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: const Text('关闭'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -194,21 +261,11 @@ class _HomePageState extends ConsumerState<HomePage>
     );
     final friendName = manager?.activeFriendName ?? kAppName;
     final greeting = manager?.activeFriendGreeting;
-    final description = manager?.activeFriendDescription;
-    final identity = _identity;
     final offlineMode = providerConfigAsync.maybeWhen(
       data: (c) => c == null || !c.isConfigured,
       orElse: () => true,
     );
     final moodColor = parseHexColor(emotion.color);
-
-    // Lazy-load the friend identity once the manager is available.
-    if (manager != null && identity == null && !_identityLoaded) {
-      _loadIdentity(manager);
-    }
-
-    final tagline = identity?.tagline ?? '你的情绪伙伴';
-    final creator = identity?.creator;
 
     return Scaffold(
       // The home page sits behind the _TextInputDialog; letting it resize for
@@ -234,8 +291,9 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pushNamed(context, '/settings'),
                   ),
                   // Greeting bubble — M3 enter animation (slide + fade).
-                  if (_greetingShown &&
-                      !_greetingDismissed &&
+                  // Shown once the active Friend's greeting is available and
+                  // until the user dismisses it.
+                  if (!_greetingDismissed &&
                       greeting != null &&
                       greeting.isNotEmpty)
                     TweenAnimationBuilder<double>(
@@ -257,14 +315,98 @@ class _HomePageState extends ConsumerState<HomePage>
                             setState(() => _greetingDismissed = true),
                       ),
                     ),
-                  // Central: companion orb (focal point).
-                  Expanded(
-                    flex: 5,
+                  // Partner speech bubble — sits ABOVE the orb so it always
+                  // gets its natural height (no Flexible fighting the orb for
+                  // space). The orb below is the only Flexible element and
+                  // absorbs whatever vertical room remains. This is the fix for
+                  // the bubble's last line being clipped: the bubble is no
+                  // longer height-constrained by a Flexible slot.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: kSpace8),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 340),
+                        child: Semantics(
+                          label: isProcessing
+                              ? '伙伴正在思考中'
+                              : '伙伴说: ${emotion.displayText}',
+                          liveRegion: true,
+                          child: ClayContainer(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: kSpace16),
+                            padding: const EdgeInsets.all(kSpace12),
+                            radius: kRadiusLg,
+                            color: moodColor.withValues(alpha: 0.08),
+                            shadowIntensity: 0.5,
+                            onTap: (isProcessing ||
+                                    emotion.displayText.length <= 60)
+                                ? null
+                                : () => _showFullMessage(
+                                    context, emotion.displayText),
+                            child: AnimatedSwitcher(
+                              duration: _reducedMotion
+                                  ? Duration.zero
+                                  : kMotionFast,
+                              switchInCurve: kCurveEnter,
+                              switchOutCurve: kCurveEnter,
+                              child: isProcessing
+                                  ? Text(
+                                      '思考中…',
+                                      key: const ValueKey<String>('processing'),
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    )
+                                  : MarkdownBody(
+                                      data: emotion.displayText,
+                                      key: ValueKey<String>(
+                                          emotion.displayText),
+                                      selectable: true,
+                                      styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                                        p: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurface,
+                                          height: 1.5,
+                                        ),
+                                        textAlign: WrapAlignment.center,
+                                        h2: theme.textTheme.titleSmall?.copyWith(
+                                          color: theme.colorScheme.onSurface,
+                                        ),
+                                        h3: theme.textTheme.titleSmall?.copyWith(
+                                          color: theme.colorScheme.onSurface,
+                                        ),
+                                        strong: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurface,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        em: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurface,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        code: theme.textTheme.bodySmall?.copyWith(
+                                          fontFamily: 'monospace',
+                                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                                        ),
+                                        blockquote: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurfaceVariant,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Central: companion orb (focal point). The ONLY Flexible
+                  // element — absorbs remaining vertical space after all fixed
+                  // siblings (top bar, identity, bubble, chips, mic) take their
+                  // natural heights. Shrinks via LayoutBuilder when needed.
+                  Flexible(
+                    fit: FlexFit.loose,
                     child: Center(
                       child: RepaintBoundary(
-                        // Isolate the orb's continuous 60fps breathing animation
-                        // + emotion-bounce repaints from the gradient background,
-                        // clay shadows, and text siblings.
                         child: _CompanionOrb(
                           emoji: emotion.emoji,
                           moodColor: moodColor,
@@ -272,59 +414,6 @@ class _HomePageState extends ConsumerState<HomePage>
                           breathAnimation: _breathAnimation,
                           isProcessing: isProcessing,
                         ),
-                      ),
-                    ),
-                  ),
-                  // Identity strip: tagline + description.
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: kSpace32, vertical: kSpace4),
-                    child: Column(
-                      children: [
-                        Text(
-                          tagline,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        if (description != null &&
-                            description.isNotEmpty) ...[
-                          const SizedBox(height: kSpace4),
-                          Text(
-                            description,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                        if (creator != null && creator.isNotEmpty) ...[
-                          const SizedBox(height: kSpace4),
-                          Text(
-                            'by $creator',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // Suggestion text.
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: kSpace32, vertical: kSpace8),
-                    child: Text(
-                      emotion.suggestion,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: moodColor,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -362,25 +451,13 @@ class _HomePageState extends ConsumerState<HomePage>
                       onTap: _onMicTap,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _loadIdentity(PluginManager manager) {
-    _identityLoaded = true;
-    manager.activeFriendIdentity().then((identity) {
-      if (mounted) {
-        setState(() {
-          _identity = identity;
-          if (!_greetingShown) _greetingShown = true;
-        });
-      }
-    });
+                 ],
+               ),
+             ),
+           ],
+         ),
+       ),
+      );
   }
 }
 
@@ -484,9 +561,26 @@ class _CompanionOrb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    final orbSize = screenHeight * 0.32;
-
+    // Use LayoutBuilder so the orb shrinks to fit whatever space the Column
+    // gives it after the fixed-height siblings (greeting, identity, bubble,
+    // chips, mic) take their share. A fixed `screenHeight * 0.32` would overflow
+    // its Expanded box when those siblings already fill most of the screen.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The orb must be a perfect square. Use the SMALLER of the available
+        // width and height — if we only used height, a portrait screen would
+        // give an orbSize larger than the available width, and the parent would
+        // clamp the Container's width while leaving height untouched, turning
+        // the circle into an ellipse and stretching the emoji + processing
+        // ring with it.
+        final maxW = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+        final maxH = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.sizeOf(context).height * 0.32;
+        // Leave 10% headroom so the orb never kisses the bubble/identity edges.
+        final orbSize = (maxW < maxH ? maxW : maxH) * 0.9;
     return AnimatedBuilder(
       animation: Listenable.merge([bounceAnimation, breathAnimation]),
       builder: (context, child) {
@@ -546,6 +640,8 @@ class _CompanionOrb extends StatelessWidget {
           ],
         ),
       ),
+    );
+      },
     );
   }
 }

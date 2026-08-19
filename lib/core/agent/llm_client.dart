@@ -80,6 +80,7 @@ Future<LlmResult> chatCompletion({
   required ProviderConfig provider,
   required String systemPrompt,
   required String userInput,
+  List<ChatMessage> history = const <ChatMessage>[],
   double temperature = 0.8,
   int maxTokens = 300,
   Duration timeout = const Duration(seconds: 30),
@@ -105,6 +106,7 @@ Future<LlmResult> chatCompletion({
         key,
         systemPrompt,
         userInput,
+        history,
         temperature,
         maxTokens,
       );
@@ -174,6 +176,7 @@ class _ChatRequest {
     String key,
     String systemPrompt,
     String userInput,
+    List<ChatMessage> history,
     double temperature,
     int maxTokens,
   ) {
@@ -189,6 +192,7 @@ class _ChatRequest {
             'model': provider.effectiveModel,
             'messages': <Map<String, String>>[
               ChatMessage(role: 'system', content: systemPrompt).toJson(),
+              ...history.map((m) => m.toJson()),
               ChatMessage(role: 'user', content: userInput).toJson(),
             ],
             'temperature': temperature,
@@ -205,10 +209,10 @@ class _ChatRequest {
           },
           jsonEncode(<String, Object?>{
             'model': provider.effectiveModel,
-            // max_tokens is a REQUIRED field of the Messages API.
             'max_tokens': maxTokens,
             'system': systemPrompt,
             'messages': <Map<String, String>>[
+              ...history.map((m) => m.toJson()),
               ChatMessage(role: 'user', content: userInput).toJson(),
             ],
           }),
@@ -224,6 +228,12 @@ class _ChatRequest {
               ],
             },
             'contents': <Map<String, Object?>>[
+              ...history.map((m) => <String, Object?>{
+                    'role': m.role == 'assistant' ? 'model' : 'user',
+                    'parts': <Map<String, String>>[
+                      <String, String>{'text': m.content},
+                    ],
+                  }),
               <String, Object?>{
                 'role': 'user',
                 'parts': <Map<String, String>>[

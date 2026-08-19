@@ -86,7 +86,7 @@ Future<PackInstallResult> installPack(Directory sourceDir) async {
   if (packDest.existsSync()) {
     await packDest.delete(recursive: true);
   }
-  await _copyDirectory(sourceDir, packDest);
+  await copyDirectory(sourceDir, packDest);
 
   return PackInstallResult.ok(installedIds);
 }
@@ -109,7 +109,7 @@ Future<String?> _copyPlugin(
     if (dest.existsSync()) {
       await dest.delete(recursive: true);
     }
-    await _copyDirectory(source, dest);
+    await copyDirectory(source, dest);
     return id;
   } catch (_) {
     return null;
@@ -117,7 +117,7 @@ Future<String?> _copyPlugin(
 }
 
 /// Recursively copy a directory.
-Future<void> _copyDirectory(Directory source, Directory destination) async {
+Future<void> copyDirectory(Directory source, Directory destination) async {
   if (!destination.existsSync()) {
     await destination.create(recursive: true);
   }
@@ -127,7 +127,7 @@ Future<void> _copyDirectory(Directory source, Directory destination) async {
     if (entity is File) {
       await entity.copy(destPath);
     } else if (entity is Directory) {
-      await _copyDirectory(entity, Directory(destPath));
+      await copyDirectory(entity, Directory(destPath));
     }
   }
 }

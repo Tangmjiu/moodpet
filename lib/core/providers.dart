@@ -15,6 +15,7 @@ import 'models/provider_config.dart';
 import 'plugin/plugin_bootstrap.dart';
 import 'plugin/plugin_manager.dart';
 import 'provider_registry.dart';
+import 'storage/conversation_store.dart';
 import 'storage/settings_store.dart';
 
 /// SharedPreferences singleton.
@@ -53,12 +54,16 @@ final agentServiceProvider = FutureProvider<AgentService>(
     final settings = await ref.watch(settingsStoreProvider.future);
     final manager = await ref.watch(pluginManagerProvider.future);
     final registry = await ref.watch(providerRegistryProvider.future);
+    final conversation = await ref.watch(conversationStoreProvider.future);
 
-    // PocketClawAgent reads the active Friend's prompt and emoji mapping lazily
-    // per respond() call via the PluginManager — no need to inject here.
-    final agent = PocketClawAgent(manager, settings, registry);
+    final agent = PocketClawAgent(manager, settings, registry, conversation);
     return agent;
   },
+);
+
+/// Conversation store singleton — persistent dialogue history across restarts.
+final conversationStoreProvider = FutureProvider<ConversationStore>(
+  (ref) async => ConversationStore.load(),
 );
 
 /// Whether onboarding has been completed. The app gates entry to the home page

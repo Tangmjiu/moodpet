@@ -273,8 +273,16 @@ const String _kFallbackSystemPrompt = '''你是 MoodPet 默认伙伴，一个住
   "emoji": "😊",
   "color": "#FFD93D",
   "vibration": [100, 80, 100, 80, 100],
-  "suggestion": "简短建议（不超过10个字）"
+  "suggestion": "简短建议（不超过10个字）",
+  "message": "你对用户的完整回应（50-150字，温柔真诚地回应对方）"
 }
+
+【字段说明】
+- emoji: 表达情绪的表情
+- color: 情绪颜色（#RRGGBB）
+- vibration: 震动节奏（毫秒数组）
+- suggestion: ≤10字的短建议
+- message: 你对用户的完整回应，这是用户看到的主要文字，请认真回复
 
 【可选 Emoji】
 😊 😢 😩 😤 🤩 😌 🤔 😨 😲 😰 🥺 🥹 🧐
