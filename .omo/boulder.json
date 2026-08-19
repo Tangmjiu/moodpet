@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "active_work_id": null,
+  "works": {
+    "custom-providers": {
+      "work_id": "custom-providers",
+      "active_plan": ".omo/plans/custom-providers.md",
+      "plan_name": "custom-providers",
+      "session_ids": [
+        "opencode:sisyphus-orchestrator"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "moodpet.friend.default_smiley",
+  "type": "friend",
+  "name": "小黄脸",
+  "description": "MoodPet 默认伙伴 —— 温暖、共情、善于倾听，住在你的设备里陪你度过每一天。",
+  "version": "1.0.0",
+  "author": "MoodPet",
+  "icon": "assets/avatar.png",
+
+  "system": true,
+  "uninstallable": false,
+  "defaultEnabled": true,
+
+  "platforms": {
+    "supported": ["android", "wearos", "windows", "linux", "macos"],
+    "optimized": ["android"],
+    "fallback": {
+      "windows": "无震动反馈",
+      "linux": "无震动反馈",
+      "macos": "无震动反馈"
+    }
+  },
+
+  "dependencies": {
+    "minContainerVersion": "1.0.0",
+    "plugins": [],
+    "services": ["renderer"]
+  },
+
+  "interfaces": {
+    "identity": "assets/identity.json",
+    "personality": "system_prompt.txt",
+    "expression": "emoji_mapping.json"
+  },
+
+  "configSchema": {
+    "greeting": {
+      "type": "string",
+      "default": "你好呀！我是小黄脸，很高兴遇见你～",
+      "label": "打招呼语"
+    },
+    "vibrationEnabled": {
+      "type": "boolean",
+      "default": true,
+      "label": "启用震动"
+    }
+  }
+}

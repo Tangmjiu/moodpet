@@ -1,0 +1,118 @@
+{
+  "rules": [
+    {
+      "keywords": ["开心", "高兴", "棒", "好", "快乐", "兴奋", "嘻嘻", "哈哈"],
+      "response": {
+        "emoji": "😊",
+        "color": "#FFD93D",
+        "vibration": [100, 80, 100, 80, 100],
+        "suggestion": "继续保持这份快乐！"
+      }
+    },
+    {
+      "keywords": ["难过", "伤心", "失落", "郁闷", "哭", "悲伤", "心疼"],
+      "response": {
+        "emoji": "😢",
+        "color": "#6C9BCF",
+        "vibration": [500],
+        "suggestion": "我在呢，想聊聊吗？"
+      }
+    },
+    {
+      "keywords": ["焦虑", "紧张", "担心", "害怕", "慌", "不安"],
+      "response": {
+        "emoji": "😰",
+        "color": "#B4D4B4",
+        "vibration": [80, 50, 80, 50, 80],
+        "suggestion": "深呼吸，慢慢来"
+      }
+    },
+    {
+      "keywords": ["惊讶", "震惊", "哇", "天哪", "不会吧"],
+      "response": {
+        "emoji": "😲",
+        "color": "#FFB347",
+        "vibration": [200, 100, 200],
+        "suggestion": "确实让人意外"
+      }
+    },
+    {
+      "keywords": ["困惑", "不明白", "为什么", "怎么回事", "想不通"],
+      "response": {
+        "emoji": "🤔",
+        "color": "#C5C5C5",
+        "vibration": [300],
+        "suggestion": "一起想想看？"
+      }
+    },
+    {
+      "keywords": ["生气", "愤怒", "气死", "烦", "讨厌", "可恶"],
+      "response": {
+        "emoji": "😤",
+        "color": "#FF6B6B",
+        "vibration": [150, 80, 150, 80, 150],
+        "suggestion": "先冷静一下"
+      }
+    },
+    {
+      "keywords": ["累", "疲惫", "崩溃", "撑不住", "好难"],
+      "response": {
+        "emoji": "😩",
+        "color": "#8B8B8B",
+        "vibration": [600],
+        "suggestion": "休息一下吧"
+      }
+    },
+    {
+      "keywords": ["放松", "安心", "舒服", "平静", "还好"],
+      "response": {
+        "emoji": "😌",
+        "color": "#A8D5BA",
+        "vibration": [400],
+        "suggestion": "这样的状态真好"
+      }
+    },
+    {
+      "keywords": ["感动", "想哭", "暖心", "太好了", "谢谢"],
+      "response": {
+        "emoji": "🥹",
+        "color": "#F4B4B4",
+        "vibration": [500],
+        "suggestion": "能感受到你的心"
+      }
+    },
+    {
+      "keywords": ["好奇", "想知道", "有趣", "这是什么"],
+      "response": {
+        "emoji": "🧐",
+        "color": "#D4A5A5",
+        "vibration": [120, 60, 120],
+        "suggestion": "好奇心很珍贵"
+      }
+    },
+    {
+      "keywords": ["撒娇", "抱抱", "求安慰", "呜呜", "陪陪我"],
+      "response": {
+        "emoji": "🥺",
+        "color": "#FFB6C1",
+        "vibration": [300, 100, 300],
+        "suggestion": "过来，抱抱你"
+      }
+    },
+    {
+      "keywords": ["开心", "棒极了", "太棒了", "超级好"],
+      "response": {
+        "emoji": "🤩",
+        "color": "#FFD700",
+        "vibration": [100, 50, 100, 50, 100, 50, 100],
+        "suggestion": "为你开心！"
+      }
+    }
+  ],
+  "default": {
+    "emoji": "😊",
+    "color": "#9E9E9E",
+    "vibration": [200],
+    "suggestion": "我在这里陪着你"
+  }
+}

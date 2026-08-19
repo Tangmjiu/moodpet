@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext HTTP is permitted only for the loopback/dev hosts a local LLM
+  server typically uses. Android network-security-config domain entries do
+  NOT support CIDR ranges or IP wildcards, so 192.168.x.x LAN endpoints
+  cannot be expressed here; the only way to cover them would be a global
+  base-config cleartext flag, which would weaken every domain and is
+  deliberately not set. Users reaching a LAN-hosted server over HTTP must
+  use HTTPS or one of the loopback addresses below.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
