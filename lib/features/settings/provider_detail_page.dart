@@ -409,7 +409,18 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage>
     if (settings == null) return;
     await settings.setModelOverride(widget.provider.id, model);
     if (!mounted) return;
-    setState(() => _modelOverride = model);
+    setState(() {
+      _modelOverride = model;
+      // When a model is selected and no default model has been set yet,
+      // treat the first pick as the default too — this keeps the 默认模型
+      // field in sync with the user's selection instead of staying empty.
+      if (model != null &&
+          _isCustom &&
+          _defaultModelController.text.trim().isEmpty) {
+        _defaultModelController.text = model;
+        _defaultModelError = null;
+      }
+    });
   }
 
   Future<void> _removeModel(String model) async {
@@ -1013,7 +1024,9 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage>
   Widget _buildModelRow(ThemeData theme, String model,
       {required bool isDefault}) {
     final isActive =
-        isDefault ? _modelOverride == null : _modelOverride == model;
+        isDefault
+            ? (_modelOverride == null || _modelOverride == model)
+            : _modelOverride == model;
     return ClayContainer(
       padding: const EdgeInsets.symmetric(
           horizontal: kSpace16, vertical: kSpace12),
