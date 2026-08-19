@@ -41,10 +41,17 @@ const String _kAfdianUrl = 'https://www.ifdian.net/a/mjiutang';
 const String _kContributorsApi =
     'https://api.github.com/repos/Tangmjiu/moodpet/contributors?per_page=30';
 
-Future<void> _launchUrl(String url) async {
+Future<void> _launchUrl(BuildContext context, String url) async {
   final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
+  try {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    debugPrint('launchUrl failed for $url: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('无法打开链接: $url')),
+      );
+    }
   }
 }
 
@@ -261,7 +268,7 @@ class _AboutPageState extends State<AboutPage> {
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(kRadiusLg),
                     child: InkWell(
-                      onTap: () => _launchUrl(_kAfdianUrl),
+                      onTap: () => _launchUrl(context, _kAfdianUrl),
                       borderRadius: BorderRadius.circular(kRadiusLg),
                       child: Padding(
                         padding: const EdgeInsets.all(kSpace20),
@@ -299,7 +306,8 @@ class _AboutPageState extends State<AboutPage> {
                                       size: 18,
                                     ),
                                     label: const Text('前往爱发电'),
-                                    onPressed: () => _launchUrl(_kAfdianUrl),
+                                    onPressed: () =>
+                                        _launchUrl(context, _kAfdianUrl),
                                   ),
                                 ],
                               ),
@@ -356,7 +364,7 @@ class _AboutPageState extends State<AboutPage> {
               const SizedBox(height: kSpace32),
               // 6. Footer.
               Text(
-                '用 ♥ 制作',
+                'by mjiutang',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelMedium,
               ),
@@ -411,7 +419,7 @@ class _ContributorChip extends StatelessWidget {
       child: InkWell(
         onTap: contributor.profileUrl.isEmpty
             ? null
-            : () => _launchUrl(contributor.profileUrl),
+            : () => _launchUrl(context, contributor.profileUrl),
         borderRadius: BorderRadius.circular(kRadiusLg),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -509,7 +517,7 @@ class _LinkText extends StatelessWidget {
     final cs = theme.colorScheme;
 
     return InkWell(
-      onTap: () => _launchUrl(url),
+      onTap: () => _launchUrl(context, url),
       borderRadius: BorderRadius.circular(kRadiusSm),
       child: Padding(
         padding: const EdgeInsets.symmetric(
